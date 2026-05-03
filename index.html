@@ -265,7 +265,7 @@
 
     <header>
         <h1>Global Capybara Tracker</h1>
-        <p>A compiled list of global wildlife establishments that host Capybaras.</p>
+        <p>Analyze transit corridors and admission grids without map rendering.</p>
     </header>
 
     <div class="container">
@@ -320,9 +320,8 @@
     </div>
 
     <script>
-        // Compiled high-fidelity database containing exactly the 46 unique zoos discussed
         const zooDatabase = [
-            // Major Zoos with Capybaras Only (No Petting)
+            // Standard Zoos with Capybaras
             { name: "San Francisco Zoo", address: "San Francisco, California, USA", priceUSD: 30, priceEUR: 27.50, hours: "10:00 AM - 5:00 PM", url: "https://sfzoo.org", petting: false, lat: 37.7327, lng: -122.5028 },
             { name: "Sacramento Zoo", address: "Sacramento, California, USA", priceUSD: 23, priceEUR: 21.00, hours: "9:00 AM - 4:00 PM", url: "https://saczoo.org", petting: false, lat: 38.5414, lng: -121.4939 },
             { name: "Happy Hollow Park & Zoo", address: "San Jose, California, USA", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 5:00 PM", url: "https://happyhollow.org", petting: false, lat: 37.3235, lng: -121.8596 },
@@ -352,7 +351,7 @@
             { name: "Night Safari", address: "Singapore", priceUSD: 42, priceEUR: 38.50, hours: "7:15 PM - 12:00 AM", url: "https://mandai.com", petting: false, lat: 1.4024, lng: 103.7796 },
             { name: "Taronga Zoo", address: "Sydney, Australia", priceUSD: 33, priceEUR: 30.50, hours: "9:30 AM - 4:30 PM", url: "https://taronga.org.au", petting: false, lat: -33.8435, lng: 151.2413 },
 
-            // Zoos and Parks with Capybara Petting
+            // Zoos Offering Direct Capybara Petting
             { name: "Ghost Ranch Exotics", address: "Marana, Arizona, USA", priceUSD: 35, priceEUR: 32.00, hours: "Appt Only", url: "https://ghostranchexotics.com", petting: true, lat: 32.4364, lng: -111.2251 },
             { name: "Funny Foot Farm / Tucson Petting Zoo", address: "Tucson, Arizona, USA", priceUSD: 12, priceEUR: 11.00, hours: "10:00 AM - 5:00 PM", url: "https://tucsonpettingzoo.com", petting: true, lat: 32.2226, lng: -110.9747 },
             { name: "Gatorland", address: "Orlando, Florida, USA", priceUSD: 35, priceEUR: 32.00, hours: "10:00 AM - 5:00 PM", url: "https://gatorland.com", petting: true, lat: 28.3556, lng: -81.4034 },
@@ -370,7 +369,7 @@
             { name: "Hoo Zoo and Dinosaur World", address: "Telford, England, UK", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 5:00 PM", url: "https://hoozoo.com", petting: true, lat: 52.7121, lng: -2.4844 },
             { name: "Capyba Cafe", address: "Tokyo, Japan", priceUSD: 12, priceEUR: 11.00, hours: "11:00 AM - 7:00 PM", url: "https://capybacafe.jp", petting: true, lat: 35.6895, lng: 139.6917 },
 
-            // Zoos on Both Lists (Major Capybara Host AND Petting Offered)
+            // Major Zoos that ALSO offer Petting
             { name: "San Diego Zoo", address: "San Diego, California, USA", priceUSD: 72, priceEUR: 66.00, hours: "9:00 AM - 5:00 PM", url: "https://sandiegozoo.org", petting: true, lat: 32.7353, lng: -117.1490 },
             { name: "London Zoo", address: "London, England, UK", priceUSD: 40, priceEUR: 37.00, hours: "10:00 AM - 6:00 PM", url: "https://londonzoo.org", petting: true, lat: 51.5353, lng: -0.1534 },
             { name: "Saaremaa Zoo", address: "Saaremaa, Estonia", priceUSD: 12, priceEUR: 11.00, hours: "10:00 AM - 6:00 PM", url: "https://saaremaazoo.ee", petting: true, lat: 58.2481, lng: 22.5039 },
@@ -408,4 +407,7 @@
 
         function openModal(zoo) {
             document.getElementById('modal-title').innerText = zoo.name;
-            document.getElementById('modal-address').innerText = zoo.address
+            document.getElementById('modal-address').innerText = zoo.address;
+            document.getElementById('modal-price-usd').innerText = `$${zoo.priceUSD} USD`;
+            document.getElementById('modal-price-eur').innerText = `€${zoo.priceEUR} EUR`;
+            document.getElementById('modal-hours').innerText
