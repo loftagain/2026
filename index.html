@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capybara World Tracker</title>
+    
+    <!-- DROP BLOCK 2 (CSS STYLING) DIRECTLY BELOW THIS LINE -->
     <style>
-        :root {
+              :root {
             --primary: #5c8374;
             --secondary: #1b4242;
             --light: #f5f7f8;
@@ -19,7 +21,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* Enforces smooth native scrolling across mobile touchscreens */
         html, body {
             background-color: var(--light);
             color: var(--dark);
@@ -48,7 +49,6 @@
             padding: 0 1rem;
         }
 
-        /* Controls Section: Wraps cleanly on small screens */
         .controls {
             background: white;
             padding: 1.25rem;
@@ -64,7 +64,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            flex: 1 1 200px; /* Expands and wraps flexibly */
+            flex: 1 1 200px;
         }
         label {
             font-size: 0.8rem;
@@ -80,7 +80,7 @@
             font-size: 1rem;
             width: 100%;
             background-color: #fff;
-            -webkit-appearance: none; /* Removes iOS default styling */
+            -webkit-appearance: none;
         }
         .results-count {
             font-size: 0.9rem; 
@@ -89,7 +89,6 @@
             text-align: center;
         }
 
-        /* Zoo Cards Grid: Auto-fills up to 4 columns on large screens */
         .zoo-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -109,7 +108,6 @@
             border: 1px solid #eee;
         }
         
-        /* Interactive scaling only applied to desktop pointing devices */
         @media (hover: hover) {
             .zoo-card:hover {
                 transform: translateY(-3px);
@@ -146,7 +144,6 @@
             margin-top: auto;
         }
 
-        /* MODAL POPUP STYLES */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -243,12 +240,9 @@
             line-height: 1.6;
         }
 
-        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 480px) {
             .container { padding: 0 0.75rem; }
             .controls { padding: 1rem; gap: 1rem; }
-            
-            /* Becomes edge-to-edge canvas on small screens for better accessibility */
             .modal-overlay { padding: 0; }
             .modal-content {
                 border-radius: 0;
@@ -259,6 +253,7 @@
             }
             .modal-close { top: 10px; right: 10px; }
         }
+
     </style>
 </head>
 <body>
@@ -319,6 +314,7 @@
         </div>
     </div>
 
+    <!-- DROP BLOCK 3 (JAVASCRIPT LOGIC) DIRECTLY BELOW THIS LINE -->
     <script>
         const zooDatabase = [
             // Standard Zoos with Capybaras
@@ -384,7 +380,7 @@
             const grid = document.getElementById('zoo-grid');
             grid.innerHTML = '';
             
-            activeZoos.forEach((zoo, index) => {
+            activeZoos.forEach((zoo) => {
                 const card = document.createElement('div');
                 card.className = 'zoo-card';
                 card.onclick = () => openModal(zoo);
@@ -407,7 +403,8 @@
 
         function openModal(zoo) {
             document.getElementById('modal-title').innerText = zoo.name;
-            document.getElementById('modal-address').innerText = zoo.address;
-            document.getElementById('modal-price-usd').innerText = `$${zoo.priceUSD} USD`;
-            document.getElementById('modal-price-eur').innerText = `€${zoo.priceEUR} EUR`;
-            document.getElementById('modal-hours').innerText
+            document.getElementById('modal
+
+    </script>
+</body>
+</html>
