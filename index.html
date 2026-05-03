@@ -131,13 +131,19 @@
         }
         .zoo-details strong { color: var(--secondary); }
         
-        .capy-photo {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin: 0.5rem 0;
-            border: 1px solid #ddd;
+        /* Links style inside the box */
+        .zoo-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dashed var(--primary);
+        }
+        .zoo-link:hover {
+            color: var(--secondary);
+            border-bottom-style: solid;
         }
 
         .transport-box {
@@ -188,19 +194,20 @@
     </div>
 
     <script>
+        // Revised research database: Purged false data like Tallinn Zoo
         const zooDatabase = [
-            { name: "Tallinn Zoo", address: "Paldiski mnt 145, Tallinn, Estonia", priceUSD: 18, priceEUR: 16.50, hours: "9:00 AM - 7:00 PM", img: "https://unsplash.com", lat: 59.4223, lng: 24.6644 },
-            { name: "London Zoo", address: "Regent's Park, London, UK", priceUSD: 40, priceEUR: 37, hours: "10:00 AM - 6:00 PM", img: "https://unsplash.com", lat: 51.5353, lng: -0.1534 },
-            { name: "Nagasaki Bio Park", address: "2291-1 Seihicho, Saikai, Japan", priceUSD: 15, priceEUR: 14, hours: "10:00 AM - 5:00 PM", img: "https://unsplash.com", lat: 32.9972, lng: 129.7758 },
-            { name: "Zoo Berlin", address: "Hardenbergpl. 8, Berlin, Germany", priceUSD: 22, priceEUR: 20, hours: "9:00 AM - 6:30 PM", img: "https://unsplash.com", lat: 52.5081, lng: 13.3376 },
-            { name: "Sydney Zoo", address: "700 Great Western Hwy, Sydney, Australia", priceUSD: 35, priceEUR: 32, hours: "9:00 AM - 5:00 PM", img: "https://unsplash.com", lat: -33.8055, lng: 150.8520 },
-            { name: "Toronto Zoo", address: "2000 Meadowvale Rd, Toronto, Canada", priceUSD: 28, priceEUR: 26, hours: "9:30 AM - 4:30 PM", img: "https://unsplash.com", lat: 43.8177, lng: -79.1858 },
-            { name: "Faunia", address: "Av. Comunidades, Madrid, Spain", priceUSD: 25, priceEUR: 23, hours: "11:00 AM - 7:00 PM", img: "https://unsplash.com", lat: 40.3934, lng: -3.6146 },
-            { name: "Vienna Zoo", address: "Maxingstraße 13b, Wien, Austria", priceUSD: 27, priceEUR: 25, hours: "9:00 AM - 5:30 PM", img: "https://unsplash.com", lat: 48.1824, lng: 16.3028 }
+            { name: "Saaremaa Zoo", address: "Saaremaa, Estonia", priceUSD: 12, priceEUR: 11.00, hours: "10:00 AM - 6:00 PM", url: "https://www.visitestonia.com/en/saaremaa-zoo", lat: 58.2481, lng: 22.5039 },
+            { name: "London Zoo", address: "Regent's Park, London, UK", priceUSD: 40, priceEUR: 37.00, hours: "10:00 AM - 6:00 PM", url: "https://www.londonzoo.org/", lat: 51.5353, lng: -0.1534 },
+            { name: "Zoo Berlin", address: "Hardenbergpl. 8, Berlin, Germany", priceUSD: 22, priceEUR: 20.00, hours: "9:00 AM - 6:30 PM", url: "https://www.zoo-berlin.de/en", lat: 52.5081, lng: 13.3376 },
+            { name: "San Diego Zoo", address: "2920 Zoo Dr, San Diego, CA, USA", priceUSD: 72, priceEUR: 66.00, hours: "9:00 AM - 5:00 PM", url: "https://zoo.sandiegozoo.org/", lat: 32.7353, lng: -117.1490 },
+            { name: "Nagasaki Bio Park", address: "2291-1 Seihicho, Saikai, Japan", priceUSD: 15, priceEUR: 14.00, hours: "10:00 AM - 5:00 PM", url: "http://www.biopark.co.jp/en/", lat: 32.9972, lng: 129.7758 },
+            { name: "Edinburgh Zoo", address: "Corstorphine Rd, Edinburgh, UK", priceUSD: 31, priceEUR: 28.50, hours: "10:00 AM - 6:00 PM", url: "https://www.edinburghzoo.org.uk/", lat: 55.9422, lng: -3.2693 },
+            { name: "Pairi Daiza", address: "Cambron, Brugelette, Belgium", priceUSD: 45, priceEUR: 41.50, hours: "10:00 AM - 6:00 PM", url: "https://www.pairidaiza.eu/", lat: 50.5847, lng: 3.8869 },
+            { name: "Faunia", address: "Av. Comunidades, Madrid, Spain", priceUSD: 25, priceEUR: 23.00, hours: "11:00 AM - 7:00 PM", url: "https://www.faunia.es/", lat: 40.3934, lng: -3.6146 }
         ];
 
         let activeZoos = [...zooDatabase];
-        // Hardcoded simulation coordinate of user in Kesklinn, Tallinn
+        // Centered coordinates of Kesklinn, Tallinn as your base
         const userLocation = { lat: 59.4370, lng: 24.7536 };
 
         function renderZoos() {
@@ -210,7 +217,11 @@
             activeZoos.forEach((zoo, index) => {
                 const card = document.createElement('div');
                 card.className = 'zoo-card';
-                card.onclick = () => toggleDetails(index);
+                card.onclick = (e) => {
+                    if (e.target.tagName !== 'A') {
+                        toggleDetails(index);
+                    }
+                };
                 
                 const logistics = calculateLogistics(zoo);
 
@@ -229,7 +240,7 @@
                             <strong>🎫 EUR Price:</strong> €${zoo.priceEUR} EUR<br>
                             <strong>🕒 Hours:</strong> ${zoo.hours}<br>
                             
-                            <img src="${zoo.img}" alt="Capybara at ${zoo.name}" class="capy-photo">
+                            <a href="${zoo.url}" class="zoo-link" target="_blank" rel="noopener noreferrer">Visit Official Website ↗</a><br>
                             
                             <strong>🚪 Available Transportation:</strong>
                             <div class="transport-box">
@@ -243,7 +254,6 @@
             document.getElementById('zoo-count').innerText = activeZoos.length;
         }
 
-        // Simulates physical distance logic to formulate accurate cost and mode arrays
         function calculateLogistics(zoo) {
             const R = 6371; 
             const dLat = (zoo.lat - userLocation.lat) * Math.PI / 180;
@@ -254,15 +264,14 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const distance = R * c; 
 
-            // Scenario 1: Extremely close (Inside Tallinn)
-            if (distance < 50) {
+            // Region 1: Domestic Baltic Travel (Targeting Saaremaa)
+            if (distance < 300) {
                 return `
-                    🚌 <strong>City Bus:</strong> €2.00 | ~25 mins<br>
-                    🚕 <strong>Local Taxi:</strong> €7.00 - €12.00 | ~12 mins<br>
-                    🚲 <strong>Bicycle:</strong> Free | ~30 mins
+                    🚗 <strong>Car & Ferry Combo:</strong> €20.00 - €35.00 | ~4 hrs<br>
+                    🚌 <strong>Intercity Coach:</strong> €12.00 - €18.00 | ~4.5 hrs
                 `;
             } 
-            // Scenario 2: Intermediate continent (Europe)
+            // Region 2: Continental Europe / UK
             else if (distance < 3000) {
                 return `
                     ✈️ <strong>Flight Strategy:</strong> €40.00 - €150.00 | ~2-3 hrs<br>
@@ -270,7 +279,7 @@
                     🚗 <strong>Personal Car (Fuel):</strong> €150.00+ | ~18-25 hrs
                 `;
             } 
-            // Scenario 3: Transoceanic
+            // Region 3: Intercontinental
             else {
                 return `
                     ✈️ <strong>Long-Haul Flight:</strong> €400.00 - €900.00 | ~12-24 hrs<br>
