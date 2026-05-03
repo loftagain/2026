@@ -174,7 +174,7 @@
 
     <header>
         <h1>Global Capybara Tracker</h1>
-        <p>Locate the world's most friendly giant rodents on open-source maps.</p>
+        <p>Locate the world's most friendly giant rodents on open-source OpenStreetMap infrastructure.</p>
     </header>
 
     <div class="container">
@@ -200,7 +200,7 @@
         <!-- Map and Routing Results -->
         <section class="map-section">
             <h2>Expedition Routing Map</h2>
-            <p style="color: #666; margin-bottom: 1rem;">Click "Plan Travel" on any card below to see straight-line distances mapped.</p>
+            <p style="color: #666; margin-bottom: 1rem;">Click "Plan Travel" on any card to map real turn-by-turn road physics.</p>
             <div id="map"></div>
             <div id="route-info"></div>
         </section>
@@ -213,6 +213,7 @@
     <script src="https://unpkg.com"></script>
 
     <script>
+        // High fidelity database with target pricing and schedule metrics
         const zooDatabase = [
             { name: "San Diego Zoo", address: "2920 Zoo Dr, San Diego, CA 92101, USA", price: 72, hours: "9:00 AM - 5:00 PM", lat: 32.7353, lng: -117.1490 },
             { name: "London Zoo", address: "Regent's Park, London NW1 4RY, UK", price: 40, hours: "10:00 AM - 6:00 PM", lat: 51.5353, lng: -0.1534 },
@@ -229,23 +230,21 @@
         let activeZoos = [...zooDatabase];
         let currentRouteLine = null;
 
-        // Initialize Map
         function initApp() {
-            // Leaflet map initialization targeting the 'map' div
+            // Initiate Leaflet Map tied to OpenStreetMap
             map = L.map('map').setView([20.0, 0.0], 2);
 
-            // Loading OpenStreetMap free tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add zoo markers to the map
+            // Add persistent markers for all zoos
             zooDatabase.forEach(zoo => {
                 L.marker([zoo.lat, zoo.lng]).addTo(map)
                     .bindPopup(`<b>${zoo.name}</b><br>Tickets: $${zoo.price}`);
             });
 
-            // Handle Geolocation
+            // Locate browser if allowed
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -260,11 +259,11 @@
                             color: '#0074D9',
                             fillColor: '#0074D9',
                             fillOpacity: 0.8
-                        }).addTo(map).bindPopup("Your Current Location").openPopup();
+                        }).addTo(map).bindPopup("Your Current Position").openPopup();
 
                         processDisplay();
                     },
-                    () => { console.log("Geolocation blocked by user."); }
+                    () => { console.log("User rejected permission for browser geodata."); }
                 );
             }
 
@@ -301,7 +300,7 @@
                             <strong>📍 Coordinates:</strong> ${zoo.lat.toFixed(2)}, ${zoo.lng.toFixed(2)}
                         </div>
 
-                        <button class="btn-travel" onclick="drawTravelPath(${zoo.lat}, ${zoo.lng}, '${zoo.name}', event)">Plan Travel</button>
+                        <button class="btn-travel" onclick="getOSRMRoute(${zoo.lat}, ${zoo.lng}, '${zoo.name}', event)">Plan Travel</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -346,7 +345,7 @@
         }
 
         function getHaversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth radius in KM
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -356,46 +355,80 @@
             return R * c; 
         }
 
-        // Draw a path from user to the chosen zoo on the map
-        function drawTravelPath(zooLat, zooLng, zooName, event) {
+        // Fetching real driving physics via OpenStreetMap's Routing Engine (OSRM)
+        function getOSRMRoute(zooLat, zooLng, zooName, event) {
             event.stopPropagation();
             
             if (!userLocation) {
-                alert("We need your location allowed to map the physical expedition line.");
+                alert("Please allow location services so the road physics engine knows where to start.");
                 return;
-            }
-
-            // Remove any previous line drawn on the map
-            if (currentRouteLine) {
-                map.removeLayer(currentRouteLine);
             }
 
             const routeInfoDiv = document.getElementById('route-info');
             routeInfoDiv.style.display = 'block';
+            routeInfoDiv.innerHTML = '<div style="padding:1rem;">Calculating legal road paths...</div>';
 
-            // Draw straight line "Great Circle" path on the Leaflet Map
+            if (currentRouteLine) { map.removeLayer(currentRouteLine); }
+
+            // Query OSRM server for street geometry
+            const url = `https://project-osrm.org{userLocation.lng},${userLocation.lat};${zooLng},${zooLat}?overview=full&geometries=geojson`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === "Ok") {
+                        const route = data.routes[0];
+                        const coordinates = route.geometry.coordinates;
+                        
+                        // Convert OSRM's [lng, lat] to Leaflet's [lat, lng]
+                        const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
+
+                        currentRouteLine = L.polyline(latLngs, {color: '#FF4136', weight: 4}).addTo(map);
+                        map.fitBounds(currentRouteLine.getBounds(), { padding: });
+
+                        const distKm = (route.distance / 1000).toFixed(1);
+                        const durationHrs = (route.duration / 3600).toFixed(1);
+
+                        routeInfoDiv.innerHTML = `
+                            <div class="route-card">
+                                <strong>🚀 Fast Strategy (Turn-by-Turn Driving via OSM)</strong><br>
+                                Real Road Distance: ${distKm} KM<br>
+                                Continuous Drive Time: ~${durationHrs} Hours to reach ${zooName}.
+                            </div>
+                        `;
+                    } else {
+                        // Fallback triggered if path demands an ocean crossing (no roads exist)
+                        triggerFallbackPath(zooLat, zooLng, zooName);
+                    }
+                })
+                .catch(error => {
+                    console.error("OSRM Error:", error);
+                    triggerFallbackPath(zooLat, zooLng, zooName);
+                });
+        }
+
+        function triggerFallbackPath(zooLat, zooLng, zooName) {
+            const routeInfoDiv = document.getElementById('route-info');
+            
             const pathCoordinates = [
                 [userLocation.lat, userLocation.lng],
                 [zooLat, zooLng]
             ];
 
-            currentRouteLine = L.polyline(pathCoordinates, {color: '#FF4136', weight: 4}).addTo(map);
-            
-            // Adjust map view to fit both the user and the target zoo
-            map.fitBounds(currentRouteLine.getBounds(), { padding: [50, 50] });
+            currentRouteLine = L.polyline(pathCoordinates, {color: '#5c8374', weight: 4, dashArray: '5, 10'}).addTo(map);
+            map.fitBounds(currentRouteLine.getBounds(), { padding: });
 
             const distance = getHaversineDistance(userLocation.lat, userLocation.lng, zooLat, zooLng);
 
             routeInfoDiv.innerHTML = `
-                <div class="route-card">
-                    <strong>🌐 Global Expedition to ${zooName}</strong><br>
-                    Direct Aerial Distance: ~${Math.round(distance).toLocaleString()} KM<br>
-                    <small>Note: Turn-by-turn road physics are omitted on the free open-source map to avoid private API blockages on GitHub.</small>
+                <div class="route-card" style="border-left-color: #5c8374;">
+                    <strong>✈️ Expedition to ${zooName}</strong><br>
+                    Continuous road paths are impossible across ocean barriers. <br>
+                    Direct Aerial Distance: ~${Math.round(distance).toLocaleString()} KM.
                 </div>
             `;
         }
 
-        // Fire the code when scripts load
         window.onload = initApp;
     </script>
 </body>
