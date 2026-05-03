@@ -13,10 +13,10 @@
         .controls{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
         .control-group{flex:1 1 200px;display:flex;flex-direction:column;gap:0.25rem}
         label{font-size:0.75rem;font-weight:700;color:var(--secondary);text-transform:uppercase}
-        select,input{padding:0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem}
+        select{padding:0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;background-color:#fff}
         .results-count{font-size:0.85rem;color:#666;flex:1 1 100%;text-align:center}
         .zoo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
-        .zoo-card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;flex-direction:column;cursor:pointer;transition:0.2s;border:1px solid #eee}
+        .zoo-card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;flex-direction:column;cursor:pointer;transition:0.2s;border:1px solid #eee;position:relative}
         .zoo-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
         .zoo-info{padding:1rem;display:flex;flex-direction:column;flex-grow:1}
         .zoo-name{font-size:1.05rem;color:var(--secondary);margin-bottom:0.25rem;font-weight:700}
@@ -45,16 +45,17 @@
     <div class="container">
         <div class="controls">
             <div class="control-group">
-                <label for="sort">Sort By</label>
-                <select id="sort" onchange="process()"><option value="def">Default</option><option value="cheap">Cheapest First</option></select>
-            </div>
-            <div class="control-group">
-                <label for="petting">Petting</label>
-                <select id="petting" onchange="process()"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
-            </div>
-            <div class="control-group">
-                <label for="price">Max USD Price</label>
-                <input type="number" id="price" placeholder="e.g. 30" oninput="process()">
+                <label for="filter-select">Display Filter</label>
+                <select id="filter-select" onchange="process()">
+                    <option value="def">All Locations (Default)</option>
+                    <option value="cheap">Sort: Cheapest Tickets First</option>
+                    <option value="petting">Filter: Petting Experiences Only</option>
+                    <option value="budget">Filter: Budget Options Only (Under $25)</option>
+                    <option value="na">Region: North America</option>
+                    <option value="eu">Region: Europe</option>
+                    <option value="as">Region: Asia</option>
+                    <option value="oc">Region: Oceania</option>
+                </select>
             </div>
             <div class="results-count"><span id="count"></span> locations found.</div>
         </div>
@@ -77,67 +78,75 @@
     </div>
     <script>
         const db = [
-            {n:"San Francisco Zoo",a:"CA, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://sfzoo.org",pt:0,lt:37.7,lg:-122.5},
-            {n:"Sacramento Zoo",a:"CA, USA",pU:23,pE:21,h:"9AM-4PM",u:"https://saczoo.org",pt:0,lt:38.5,lg:-121.5},
-            {n:"Happy Hollow Zoo",a:"CA, USA",pU:18,pE:16.5,h:"10AM-5PM",u:"https://happyhollow.org",pt:0,lt:37.3,lg:-121.8},
-            {n:"Denver Zoo",a:"CO, USA",pU:24,pE:22,h:"10AM-5PM",u:"https://denverzoo.org",pt:0,lt:39.7,lg:-104.9},
-            {n:"Jacksonville Zoo",a:"FL, USA",pU:30,pE:27.5,h:"9AM-5PM",u:"https://jacksonvillezoo.org",pt:0,lt:30.4,lg:-81.6},
-            {n:"Brevard Zoo",a:"FL, USA",pU:32,pE:29,h:"9:30AM-5PM",u:"https://brevardzoo.org",pt:0,lt:28.2,lg:-80.7},
-            {n:"Brookfield Zoo",a:"IL, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://brookfieldzoo.org",pt:0,lt:41.8,lg:-87.8},
-            {n:"Sedgwick County Zoo",a:"KS, USA",pU:22,pE:20,h:"9AM-5PM",u:"https://scz.org",pt:0,lt:37.7,lg:-97.4},
-            {n:"Franklin Park Zoo",a:"MA, USA",pU:25,pE:23,h:"10AM-5PM",u:"https://zoonewengland.org",pt:0,lt:42.3,lg:-71.1},
-            {n:"Southwick's Zoo",a:"MA, USA",pU:38,pE:35,h:"10AM-5PM",u:"https://southwickszoo.com",pt:0,lt:42.1,lg:-71.6},
-            {n:"Buffalo Zoo",a:"NY, USA",pU:21,pE:19,h:"10AM-4PM",u:"https://buffalozoo.org",pt:0,lt:42.9,lg:-78.8},
-            {n:"Cleveland Zoo",a:"OH, USA",pU:19,pE:17.5,h:"10AM-5PM",u:"https://clevelandmetroparks.com",pt:0,lt:41.4,lg:-81.7},
-            {n:"Pittsburgh Zoo",a:"PA, USA",pU:24,pE:22,h:"9:30AM-4PM",u:"https://pittsburghzoo.org",pt:0,lt:40.5,lg:-79.9},
-            {n:"Houston Zoo",a:"TX, USA",pU:27,pE:25,h:"9AM-5PM",u:"https://houstonzoo.org",pt:0,lt:29.7,lg:-95.4},
-            {n:"Dallas Zoo",a:"TX, USA",pU:21,pE:19,h:"9AM-4PM",u:"https://dallaszoo.com",pt:0,lt:32.7,lg:-96.8},
-            {n:"Toronto Zoo",a:"ON, Canada",pU:28,pE:26,h:"9:30AM-4:30PM",u:"https://torontozoo.com",pt:0,lt:43.8,lg:-79.2},
-            {n:"Chester Zoo",a:"England, UK",pU:36,pE:33,h:"10AM-5PM",u:"https://chesterzoo.org",pt:0,lt:53.2,lg:-2.9},
-            {n:"Cotswold Wildlife Park",a:"England",pU:22,pE:20,h:"10AM-6PM",u:"https://cotswoldwildlifepark.co.uk",pt:0,lt:51.8,lg:-1.6},
-            {n:"Zoo Berlin",a:"Germany",pU:22,pE:20,h:"9AM-6:30PM",u:"https://zoo-berlin.de",pt:0,lt:52.5,lg:13.3},
-            {n:"Tiergarten Schonbrunn",a:"Vienna, Austria",pU:27,pE:25,h:"9AM-5:30PM",u:"https://zoovienna.at",pt:0,lt:48.2,lg:16.3},
-            {n:"Zoo Barcelona",a:"Spain",pU:24,pE:22,h:"10AM-5:30PM",u:"https://zoobarcelona.cat",pt:0,lt:41.4,lg:2.2},
-            {n:"Copenhagen Zoo",a:"Denmark",pU:30,pE:27.5,h:"10AM-4PM",u:"https://zoo.dk",pt:0,lt:55.7,lg:12.5},
-            {n:"Artis Royal Zoo",a:"Netherlands",pU:28,pE:26,h:"9AM-6PM",u:"https://artis.nl",pt:0,lt:52.4,lg:4.9},
-            {n:"Zurich Zoo",a:"Switzerland",pU:29,pE:26.5,h:"9AM-6PM",u:"https://zoo.ch",pt:0,lt:47.4,lg:8.6},
-            {n:"Nasu Animal Kingdom",a:"Nasu, Japan",pU:18,pE:16.5,h:"10AM-4:30PM",u:"https://nasu-oukoku.com",pt:0,lt:37.1,lg:140.1},
-            {n:"Ocean Park",a:"Hong Kong",pU:64,pE:59,h:"10AM-7PM",u:"https://oceanpark.com.hk",pt:0,lt:22.2,lg:114.2},
-            {n:"Night Safari",a:"Singapore",pU:42,pE:38.5,h:"7:15PM-12AM",u:"https://mandai.com",pt:0,lt:1.4,lg:103.8},
-            {n:"Taronga Zoo",a:"Sydney, Australia",pU:33,pE:30.5,h:"9:30AM-4:30PM",u:"https://taronga.org.au",pt:0,lt:-33.8,lg:151.2},
-            {n:"Ghost Ranch Exotics",a:"AZ, USA",pU:35,pE:32,h:"Appt Only",u:"https://ghostranchexotics.com",pt:1,lt:32.4,lg:-111.2},
-            {n:"Funny Foot Farm",a:"AZ, USA",pU:12,pE:11,h:"10AM-5PM",u:"https://tucsonpettingzoo.com",pt:1,lt:32.2,lg:-111.0},
-            {n:"Gatorland",a:"FL, USA",pU:35,pE:32,h:"10AM-5PM",u:"https://gatorland.com",pt:1,lt:28.4,lg:-81.4},
-            {n:"The Capybara Cafe",a:"FL, USA",pU:20,pE:18.5,h:"11AM-6PM",u:"https://capybaracafefl.com",pt:1,lt:29.9,lg:-81.3},
-            {n:"Wild Florida",a:"FL, USA",pU:45,pE:41.5,h:"9AM-6PM",u:"https://wildfloridairboats.com",pt:1,lt:28.0,lg:-81.1},
-            {n:"Amazing Animals",a:"FL, USA",pU:40,pE:37,h:"Appt Only",u:"https://amazinganimalsinc.org",pt:1,lt:28.2,lg:-81.3},
-            {n:"N. Georgia Wildlife",a:"GA, USA",pU:30,pE:27.5,h:"10AM-4PM",u:"https://myfavoritezoo.com",pt:1,lt:34.6,lg:-83.8},
-            {n:"Tanganyika Park",a:"KS, USA",pU:40,pE:37,h:"9AM-5PM",u:"https://twpark.com",pt:1,lt:37.7,lg:-97.5},
-            {n:"Lewis Farm Zoo",a:"MI, USA",pU:18,pE:16.5,h:"10AM-6PM",u:"https://lewisfarms.com",pt:1,lt:43.6,lg:-86.3},
-            {n:"Animal Adventure",a:"NY, USA",pU:20,pE:18.5,h:"10AM-5PM",u:"https://theanimaladventurepark.com",pt:1,lt:42.2,lg:-75.6},
-            {n:"Majestic Meadows",a:"OH, USA",pU:15,pE:14,h:"10AM-5PM",u:"https://majesticmeadowsalpacas.com",pt:1,lt:41.1,lg:-81.9},
-            {n:"Snake Farm Zoo",a:"TX, USA",pU:22,pE:20,h:"10AM-6PM",u:"https://awsfzoo.com",pt:1,lt:29.7,lg:-98.1},
-            {n:"Hertfordshire Zoo",a:"England, UK",pU:25,pE:23,h:"10AM-5PM",u:"https://hertfordshirezoo.com",pt:1,lt:51.7,lg:-0.1},
-            {n:"Chew Valley Park",a:"England, UK",pU:15,pE:14,h:"10AM-4PM",u:"https://chewvalleyanimalpark.co.uk",pt:1,lt:51.4,lg:-2.6},
-            {n:"Hoo Zoo",a:"England, UK",pU:18,pE:16.5,h:"10AM-5PM",u:"https://hoozoo.com",pt:1,lt:52.7,lg:-2.5},
-            {n:"Capyba Cafe",a:"Tokyo, Japan",pU:12,pE:11,h:"11AM-7PM",u:"https://capybacafe.jp",pt:1,lt:35.7,lg:139.7},
-            {n:"San Diego Zoo",a:"CA, USA",pU:72,pE:66,h:"9AM-5PM",u:"https://sandiegozoo.org",pt:1,lt:32.7,lg:-117.1},
-            {n:"London Zoo",a:"London, UK",pU:40,pE:37,h:"10AM-6PM",u:"https://londonzoo.org",pt:1,lt:51.5,lg:-0.2},
-            {n:"Saaremaa Zoo",a:"Estonia",pU:12,pE:11,h:"10AM-6PM",u:"https://saaremaazoo.ee",pt:1,lt:58.2,lg:22.5},
-            {n:"Nagasaki Bio Park",a:"Japan",pU:15,pE:14,h:"10AM-5PM",u:"http://biopark.co.jp",pt:1,lt:33.0,lg:129.8},
-            {n:"Izu Shaboten Zoo",a:"Japan",pU:19,pE:17.5,h:"9AM-5PM",u:"https://izushaboten.com",pt:1,lt:34.9,lg:139.1}
+            // Standard Zoos with Capybaras
+            {n:"San Francisco Zoo",a:"CA, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://sfzoo.org",pt:0,lt:37.7,lg:-122.5,reg:"na"},
+            {n:"Sacramento Zoo",a:"CA, USA",pU:23,pE:21,h:"9AM-4PM",u:"https://saczoo.org",pt:0,lt:38.5,lg:-121.5,reg:"na"},
+            {n:"Happy Hollow Zoo",a:"CA, USA",pU:18,pE:16.5,h:"10AM-5PM",u:"https://happyhollow.org",pt:0,lt:37.3,lg:-121.8,reg:"na"},
+            {n:"Denver Zoo",a:"CO, USA",pU:24,pE:22,h:"10AM-5PM",u:"https://denverzoo.org",pt:0,lt:39.7,lg:-104.9,reg:"na"},
+            {n:"Jacksonville Zoo",a:"FL, USA",pU:30,pE:27.5,h:"9AM-5PM",u:"https://jacksonvillezoo.org",pt:0,lt:30.4,lg:-81.6,reg:"na"},
+            {n:"Brevard Zoo",a:"FL, USA",pU:32,pE:29,h:"9:30AM-5PM",u:"https://brevardzoo.org",pt:0,lt:28.2,lg:-80.7,reg:"na"},
+            {n:"Brookfield Zoo",a:"IL, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://brookfieldzoo.org",pt:0,lt:41.8,lg:-87.8,reg:"na"},
+            {n:"Sedgwick County Zoo",a:"KS, USA",pU:22,pE:20,h:"9AM-5PM",u:"https://scz.org",pt:0,lt:37.7,lg:-97.4,reg:"na"},
+            {n:"Franklin Park Zoo",a:"MA, USA",pU:25,pE:23,h:"10AM-5PM",u:"https://zoonewengland.org",pt:0,lt:42.3,lg:-71.1,reg:"na"},
+            {n:"Southwick's Zoo",a:"MA, USA",pU:38,pE:35,h:"10AM-5PM",u:"https://southwickszoo.com",pt:0,lt:42.1,lg:-71.6,reg:"na"},
+            {n:"Buffalo Zoo",a:"NY, USA",pU:21,pE:19,h:"10AM-4PM",u:"https://buffalozoo.org",pt:0,lt:42.9,lg:-78.8,reg:"na"},
+            {n:"Cleveland Zoo",a:"OH, USA",pU:19,pE:17.5,h:"10AM-5PM",u:"https://clevelandmetroparks.com",pt:0,lt:41.4,lg:-81.7,reg:"na"},
+            {n:"Pittsburgh Zoo",a:"PA, USA",pU:24,pE:22,h:"9:30AM-4PM",u:"https://pittsburghzoo.org",pt:0,lt:40.5,lg:-79.9,reg:"na"},
+            {n:"Houston Zoo",a:"TX, USA",pU:27,pE:25,h:"9AM-5PM",u:"https://houstonzoo.org",pt:0,lt:29.7,lg:-95.4,reg:"na"},
+            {n:"Dallas Zoo",a:"TX, USA",pU:21,pE:19,h:"9AM-4PM",u:"https://dallaszoo.com",pt:0,lt:32.7,lg:-96.8,reg:"na"},
+            {n:"Toronto Zoo",a:"ON, Canada",pU:28,pE:26,h:"9:30AM-4:30PM",u:"https://torontozoo.com",pt:0,lt:43.8,lg:-79.2,reg:"na"},
+            {n:"Chester Zoo",a:"England, UK",pU:36,pE:33,h:"10AM-5PM",u:"https://chesterzoo.org",pt:0,lt:53.2,lg:-2.9,reg:"eu"},
+            {n:"Cotswold Wildlife Park",a:"England",pU:22,pE:20,h:"10AM-6PM",u:"https://cotswoldwildlifepark.co.uk",pt:0,lt:51.8,lg:-1.6,reg:"eu"},
+            {n:"Zoo Berlin",a:"Germany",pU:22,pE:20,h:"9AM-6:30PM",u:"https://zoo-berlin.de",pt:0,lt:52.5,lg:13.3,reg:"eu"},
+            {n:"Tiergarten Schonbrunn",a:"Vienna, Austria",pU:27,pE:25,h:"9AM-5:30PM",u:"https://zoovienna.at",pt:0,lt:48.2,lg:16.3,reg:"eu"},
+            {n:"Zoo Barcelona",a:"Spain",pU:24,pE:22,h:"10AM-5:30PM",u:"https://zoobarcelona.cat",pt:0,lt:41.4,lg:2.2,reg:"eu"},
+            {n:"Copenhagen Zoo",a:"Denmark",pU:30,pE:27.5,h:"10AM-4PM",u:"https://zoo.dk",pt:0,lt:55.7,lg:12.5,reg:"eu"},
+            {n:"Artis Royal Zoo",a:"Netherlands",pU:28,pE:26,h:"9AM-6PM",u:"https://artis.nl",pt:0,lt:52.4,lg:4.9,reg:"eu"},
+            {n:"Zurich Zoo",a:"Switzerland",pU:29,pE:26.5,h:"9AM-6PM",u:"https://zoo.ch",pt:0,lt:47.4,lg:8.6,reg:"eu"},
+            {n:"Nasu Animal Kingdom",a:"Nasu, Japan",pU:18,pE:16.5,h:"10AM-4:30PM",u:"https://nasu-oukoku.com",pt:0,lt:37.1,lg:140.1,reg:"as"},
+            {n:"Ocean Park",a:"Hong Kong",pU:64,pE:59,h:"10AM-7PM",u:"https://oceanpark.com.hk",pt:0,lt:22.2,lg:114.2,reg:"as"},
+            {n:"Night Safari",a:"Singapore",pU:42,pE:38.5,h:"7:15PM-12AM",u:"https://mandai.com",pt:0,lt:1.4,lg:103.8,reg:"as"},
+            {n:"Taronga Zoo",a:"Sydney, Australia",pU:33,pE:30.5,h:"9:30AM-4:30PM",u:"https://taronga.org.au",pt:0,lt:-33.8,lg:151.2,reg:"oc"},
+
+            // Zoos Offering Direct Capybara Petting
+            {n:"Ghost Ranch Exotics",a:"AZ, USA",pU:35,pE:32,h:"Appt Only",u:"https://ghostranchexotics.com",pt:1,lt:32.4,lg:-111.2,reg:"na"},
+            {n:"Funny Foot Farm",a:"AZ, USA",pU:12,pE:11,h:"10AM-5PM",u:"https://tucsonpettingzoo.com",pt:1,lt:32.2,lg:-111.0,reg:"na"},
+            {n:"Gatorland",a:"FL, USA",pU:35,pE:32,h:"10AM-5PM",u:"https://gatorland.com",pt:1,lt:28.4,lg:-81.4,reg:"na"},
+            {n:"The Capybara Cafe",a:"FL, USA",pU:20,pE:18.5,h:"11AM-6PM",u:"https://capybaracafefl.com",pt:1,lt:29.9,lg:-81.3,reg:"na"},
+            {n:"Wild Florida",a:"FL, USA",pU:45,pE:41.5,h:"9AM-6PM",u:"https://wildfloridairboats.com",pt:1,lt:28.0,lg:-81.1,reg:"na"},
+            {n:"Amazing Animals",a:"FL, USA",pU:40,pE:37,h:"Appt Only",u:"https://amazinganimalsinc.org",pt:1,lt:28.2,lg:-81.3,reg:"na"},
+            {n:"N. Georgia Wildlife",a:"GA, USA",pU:30,pE:27.5,h:"10AM-4PM",u:"https://myfavoritezoo.com",pt:1,lt:34.6,lg:-83.8,reg:"na"},
+            {n:"Tanganyika Park",a:"KS, USA",pU:40,pE:37,h:"9AM-5PM",u:"https://twpark.com",pt:1,lt:37.7,lg:-97.5,reg:"na"},
+            {n:"Lewis Farm Zoo",a:"MI, USA",pU:18,pE:16.5,h:"10AM-6PM",u:"https://lewisfarms.com",pt:1,lt:43.6,lg:-86.3,reg:"na"},
+            {n:"Animal Adventure",a:"NY, USA",pU:20,pE:18.5,h:"10AM-5PM",u:"https://theanimaladventurepark.com",pt:1,lt:42.2,lg:-75.6,reg:"na"},
+            {n:"Majestic Meadows",a:"OH, USA",pU:15,pE:14,h:"10AM-5PM",u:"https://majesticmeadowsalpacas.com",pt:1,lt:41.1,lg:-81.9,reg:"na"},
+            {n:"Snake Farm Zoo",a:"TX, USA",pU:22,pE:20,h:"10AM-6PM",u:"https://awsfzoo.com",pt:1,lt:29.7,lg:-98.1,reg:"na"},
+            {n:"Hertfordshire Zoo",a:"England, UK",pU:25,pE:23,h:"10AM-5PM",u:"https://hertfordshirezoo.com",pt:1,lt:51.7,lg:-0.1,reg:"eu"},
+            {n:"Chew Valley Park",a:"England, UK",pU:15,pE:14,h:"10AM-4PM",u:"https://chewvalleyanimalpark.co.uk",pt:1,lt:51.4,lg:-2.6,reg:"eu"},
+            {n:"Hoo Zoo",a:"England, UK",pU:18,pE:16.5,h:"10AM-5PM",u:"https://hoozoo.com",pt:1,lt:52.7,lg:-2.5,reg:"eu"},
+            {n:"Capyba Cafe",a:"Tokyo, Japan",pU:12,pE:11,h:"11AM-7PM",u:"https://capybacafe.jp",pt:1,lt:35.7,lg:139.7,reg:"as"},
+
+            // Major Zoos that ALSO offer Petting
+            {n:"San Diego Zoo",a:"CA, USA",pU:72,pE:66,h:"9AM-5PM",u:"https://sandiegozoo.org",pt:1,lt:32.7,lg:-117.1,reg:"na"},
+            {n:"London Zoo",a:"London, UK",pU:40,pE:37,h:"10AM-6PM",u:"https://londonzoo.org",pt:1,lt:51.5,lg:-0.2,reg:"eu"},
+            {n:"Saaremaa Zoo",a:"Estonia",pU:12,pE:11,h:"10AM-6PM",u:"https://saaremaazoo.ee",pt:1,lt:58.2,lg:22.5,reg:"eu"},
+            {n:"Nagasaki Bio Park",a:"Japan",pU:15,pE:14,h:"10AM-5PM",u:"http://biopark.co.jp",pt:1,lt:33.0,lg:129.8,reg:"as"},
+            {n:"Izu Shaboten Zoo",a:"Japan",pU:19,pE:17.5,h:"9AM-5PM",u:"https://izushaboten.com",pt:1,lt:34.9,lg:139.1,reg:"as"}
         ];
         let current = [...db];
         const uLoc = {lt:59.437,lg:24.754}; // Tallinn base
+
         function ren(){
             const g = document.getElementById('grid');g.innerHTML='';
             current.forEach((z)=>{
                 const d=document.createElement('div');d.className='zoo-card';d.onclick=()=>oM(z);
+                
                 d.innerHTML=`<div class="zoo-info"><div class="zoo-name">${z.n}</div><div class="zoo-location">${z.a}</div><div class="zoo-teaser-metrics"><span>💵 $${z.pU} / €${z.pE}</span><span>🤝 Pet: ${z.pt?'Yes':'No'}</span></div></div>`;
                 g.appendChild(d);
             });
             document.getElementById('count').innerText=current.length;
         }
+
         function oM(z){
             document.getElementById('mH').innerText=z.n;document.getElementById('mA').innerText=z.a;
             document.getElementById('mUsd').innerText=`$${z.pU}`;document.getElementById('mEur').innerText=`€${z.pE}`;
@@ -145,21 +154,36 @@
             const l=document.getElementById('mL');l.href=z.u;document.getElementById('mT').innerHTML=log(z);
             document.getElementById('ov').style.display='flex';
         }
+
         function cM(){document.getElementById('ov').style.display='none'}
+
         function log(z){
             const d=6371*2*Math.atan2(Math.sqrt(Math.sin((z.lt-uLoc.lt)*Math.PI/360)**2+Math.cos(uLoc.lt*Math.PI/180)*Math.cos(z.lt*Math.PI/180)*Math.sin((z.lg-uLoc.lg)*Math.PI/360)**2),Math.sqrt(1-(Math.sin((z.lt-uLoc.lt)*Math.PI/360)**2+Math.cos(uLoc.lt*Math.PI/180)*Math.cos(z.lt*Math.PI/180)*Math.sin((z.lg-uLoc.lg)*Math.PI/360)**2)));
             if(d<300)return `🚗 Car/Ferry: €20-€35 | ~4 hrs<br>🚌 Intercity: €12-€18 | ~4.5 hrs`;
             if(d<3000)return `✈️ Flight: €40-€150 | ~2-3 hrs<br>🚌 Intercity: €35-€80 | ~22-44 hrs`;
             return `✈️ Long Flight: €400-€900 | ~12-24 hrs<br>🛳️ Sea: Not viable for fast travel`;
         }
+
         function process(){
             let f=[...db];
-            const p=document.getElementById('price').value;if(p)f=f.filter(z=>z.pU<=parseFloat(p));
-            const t=document.getElementById('petting').value;if(t!=='all')f=f.filter(z=>z.pt===(t==='yes'));
-            if(document.getElementById('sort').value==='cheap')f.sort((a,b)=>a.pU-b.pU);
-            current=f;ren();
+            const filterType = document.getElementById('filter-select').value;
+            
+            if(filterType === 'budget') {
+                f = f.filter(z => z.pU <= 25);
+            } else if(filterType === 'petting') {
+                f = f.filter(z => z.pt === 1);
+            } else if(filterType === 'cheap') {
+                f.sort((a,b) => a.pU - b.pU);
+            } else if(['na', 'eu', 'as', 'oc'].includes(filterType)) {
+                f = f.filter(z => z.reg === filterType);
+            }
+            
+            current = f;
+            ren();
         }
-        window.onload=ren;window.addEventListener('keydown',(e)=>{if(e.key==='Escape')cM()});
+
+        window.onload=ren;
+        window.addEventListener('keydown',(e)=>{if(e.key==='Escape')cM()});
     </script>
 </body>
 </html>
