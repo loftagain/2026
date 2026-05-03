@@ -3,402 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capybara World Tracker</title>
-    
-    <!-- DROP BLOCK 2 (CSS STYLING) DIRECTLY BELOW THIS LINE -->
+    <title>Capybara Tracker</title>
     <style>
-        :root {
-            --primary: #5c8374;
-            --secondary: #1b4242;
-            --light: #f5f7f8;
-            --dark: #092626;
-            --accent: #9ec8b9;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        html, body {
-            background-color: var(--light);
-            color: var(--dark);
-            height: 100%;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        header {
-            background: linear-gradient(rgba(9, 38, 38, 0.8), rgba(9, 38, 38, 0.8)), url('https://unsplash.com') center/cover;
-            color: white;
-            text-align: center;
-            padding: clamp(2rem, 5vw, 3.5rem) 1rem;
-        }
-        header h1 { 
-            font-size: clamp(1.8rem, 4vw, 2.5rem); 
-            margin-bottom: 0.5rem; 
-        }
-        header p {
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            opacity: 0.9;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: clamp(1rem, 3vw, 2rem) auto;
-            padding: 0 1rem;
-        }
-
-        .controls {
-            background: white;
-            padding: 1.25rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            align-items: center;
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            flex: 1 1 200px;
-        }
-        label {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        select, input {
-            padding: 0.75rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            width: 100%;
-            background-color: #fff;
-            -webkit-appearance: none;
-        }
-        .results-count {
-            font-size: 0.9rem; 
-            color: #666;
-            flex: 1 1 100%;
-            text-align: center;
-        }
-        /* 4-column responsive grid mapping */
-        .zoo-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.25rem;
-            margin-top: 1.5rem;
-        }
-        
-        .zoo-card {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid #eee;
-        }
-        
-        @media (hover: hover) {
-            .zoo-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-                border-color: var(--accent);
-            }
-        }
-        
-        .zoo-info {
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        .zoo-name {
-            font-size: 1.15rem;
-            color: var(--secondary);
-            margin-bottom: 0.25rem;
-            font-weight: bold;
-        }
-        .zoo-location {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 1rem;
-            line-height: 1.4;
-        }
-        .zoo-teaser-metrics {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: #555;
-            padding-top: 0.75rem;
-            border-top: 1px solid #eee;
-            margin-top: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-        
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-close:hover { color: var(--dark); }
-        
-        .modal-header {
-            font-size: clamp(1.3rem, 3vw, 1.5rem);
-            color: var(--secondary);
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-            padding-right: 20px;
-        }
-        .modal-address {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 1.25rem;
-        }
-        .modal-body p {
-            font-size: 0.95rem;
-            color: #444;
-            line-height: 1.6;
-            margin-bottom: 0.5rem;
-        }
-        .modal-body strong { color: var(--secondary); }
-        
-        .zoo-link {
-            display: inline-block;
-            margin-top: 0.5rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            font-weight: bold;
-            text-decoration: none;
-            border-bottom: 1px dashed var(--primary);
-            font-size: 0.95rem;
-        }
-        .zoo-link:hover {
-            color: var(--secondary);
-            border-bottom-style: solid;
-        }
-
-        .transport-box {
-            background: var(--light);
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* Screen dimension breakpoints */
-        @media (max-width: 1024px) {
-            .zoo-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 768px) {
-            .zoo-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 480px) {
-            .container { padding: 0 0.75rem; }
-            .controls { padding: 1rem; gap: 1rem; }
-            .zoo-grid { grid-template-columns: 1fr; }
-            .modal-overlay { padding: 0; }
-            .modal-content {
-                border-radius: 0;
-                height: 100%;
-                max-height: 100vh;
-                max-width: 100vw;
-                padding: 1.5rem;
-            }
-            .modal-close { top: 10px; right: 10px; }
-        }
-
+        :root{--primary:#5c8374;--secondary:#1b4242;--light:#f5f7f8;--dark:#092626}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+        body{background:var(--light);color:var(--dark);height:100%}
+        header{background:linear-gradient(rgba(9,38,38,0.8),rgba(9,38,38,0.8)),url('https://unsplash.com') center/cover;color:#fff;text-align:center;padding:2rem 1rem}
+        .container{max-width:1200px;margin:1.5rem auto;padding:0 1rem}
+        .controls{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+        .control-group{flex:1 1 200px;display:flex;flex-direction:column;gap:0.25rem}
+        label{font-size:0.75rem;font-weight:700;color:var(--secondary);text-transform:uppercase}
+        select,input{padding:0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem}
+        .results-count{font-size:0.85rem;color:#666;flex:1 1 100%;text-align:center}
+        .zoo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
+        .zoo-card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;flex-direction:column;cursor:pointer;transition:0.2s;border:1px solid #eee}
+        .zoo-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
+        .zoo-info{padding:1rem;display:flex;flex-direction:column;flex-grow:1}
+        .zoo-name{font-size:1.05rem;color:var(--secondary);margin-bottom:0.25rem;font-weight:700}
+        .zoo-location{font-size:0.8rem;color:#666;margin-bottom:0.75rem}
+        .zoo-teaser-metrics{display:flex;justify-content:space-between;font-size:0.8rem;color:#555;padding-top:0.5rem;border-top:1px solid #eee;margin-top:auto}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;justify-content:center;align-items:center;padding:1rem}
+        .modal-content{background:#fff;width:100%;max-width:450px;padding:1.5rem;border-radius:12px;position:relative;animation:mIn 0.3s ease;max-height:90vh;overflow-y:auto}
+        @keyframes mIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+        .modal-close{position:absolute;top:10px;right:15px;font-size:1.5rem;color:#999;cursor:pointer;border:none;background:none}
+        .modal-header{font-size:1.3rem;color:var(--secondary);font-weight:700;margin-bottom:0.25rem}
+        .modal-address{font-size:0.8rem;color:#666;margin-bottom:1rem}
+        .modal-body p{font-size:0.9rem;color:#444;margin-bottom:0.4rem}
+        .modal-body strong{color:var(--secondary)}
+        .zoo-link{display:inline-block;margin:0.5rem 0;color:var(--primary);font-weight:700;text-decoration:none;border-bottom:1px dashed var(--primary)}
+        .transport-box{background:var(--light);padding:0.6rem;border-radius:6px;border:1px solid #e0e0e0;margin-top:0.5rem;font-size:0.85rem;line-height:1.4}
+        @media(max-width:1024px){.zoo-grid{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:768px){.zoo-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:480px){.zoo-grid{grid-template-columns:1fr}.modal-content{border-radius:0;height:100%;max-height:100vh;max-width:100vw}}
     </style>
 </head>
 <body>
-
     <header>
         <h1>Global Capybara Tracker</h1>
-        <p>Analyze transit corridors and admission grids without map rendering.</p>
+        <p>Browse global locations, logistics, and petting setups.</p>
     </header>
-
     <div class="container">
-        <!-- Filtering and Sorting Controls -->
         <div class="controls">
             <div class="control-group">
-                <label for="sort-select">Sort Zoos By</label>
-                <select id="sort-select" onchange="processDisplay()">
-                    <option value="default">Default List</option>
-                    <option value="cheapest">Cheapest Ticket First</option>
-                </select>
+                <label for="sort">Sort By</label>
+                <select id="sort" onchange="process()"><option value="def">Default</option><option value="cheap">Cheapest First</option></select>
             </div>
             <div class="control-group">
-                <label for="petting-filter">Capybara Petting</label>
-                <select id="petting-filter" onchange="processDisplay()">
-                    <option value="all">All Zoos</option>
-                    <option value="yes">Petting Offered Only</option>
-                    <option value="no">No Petting Only</option>
-                </select>
+                <label for="petting">Petting</label>
+                <select id="petting" onchange="process()"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
             <div class="control-group">
-                <label for="price-filter">Max Ticket Price (USD)</label>
-                <input type="number" id="price-filter" placeholder="e.g. 30" oninput="processDisplay()">
+                <label for="price">Max USD Price</label>
+                <input type="number" id="price" placeholder="e.g. 30" oninput="process()">
             </div>
-            <div class="results-count">
-                <span id="zoo-count"></span> locations discovered.
-            </div>
+            <div class="results-count"><span id="count"></span> locations found.</div>
         </div>
-
-        <!-- Zoo Results Grid -->
-        <div class="zoo-grid" id="zoo-grid"></div>
+        <div class="zoo-grid" id="grid"></div>
     </div>
-
-    <!-- CENTRAL POPUP MODAL -->
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-overlay" id="ov" onclick="cM()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" aria-label="Close" onclick="closeModal(event)">×</button>
-            <div class="modal-header" id="modal-title"></div>
-            <div class="modal-address" id="modal-address"></div>
+            <button class="modal-close" onclick="cM()">×</button>
+            <div class="modal-header" id="mH"></div>
+            <div class="modal-address" id="mA"></div>
             <div class="modal-body">
-                <p><strong>🎫 USD Price:</strong> <span id="modal-price-usd"></span></p>
-                <p><strong>🎫 EUR Price:</strong> <span id="modal-price-eur"></span></p>
-                <p><strong>🕒 Hours:</strong> <span id="modal-hours"></span></p>
-                <p><strong>🤝 Direct Petting:</strong> <span id="modal-petting"></span></p>
-                
-                <a href="#" id="modal-link" class="zoo-link" target="_blank" rel="noopener noreferrer">Visit Official Website ↗</a>
-                
-                <p><strong>🚪 Available Transportation Strategy:</strong></p>
-                <div class="transport-box" id="modal-transport"></div>
+                <p><strong>USD:</strong> <span id="mUsd"></span> | <strong>EUR:</strong> <span id="mEur"></span></p>
+                <p><strong>Hours:</strong> <span id="mHrs"></span></p>
+                <p><strong>Petting:</strong> <span id="mP"></span></p>
+                <a href="#" id="mL" class="zoo-link" target="_blank">Visit Website ↗</a>
+                <p><strong>Logistics:</strong></p>
+                <div class="transport-box" id="mT"></div>
             </div>
         </div>
     </div>
-
-    <!-- DROP BLOCK 3 (JAVASCRIPT LOGIC) DIRECTLY BELOW THIS LINE -->
     <script>
-        const zooDatabase = [
-            // Standard Zoos with Capybaras
-            { name: "San Francisco Zoo", address: "San Francisco, California, USA", priceUSD: 30, priceEUR: 27.50, hours: "10:00 AM - 5:00 PM", url: "https://sfzoo.org", petting: false, lat: 37.7327, lng: -122.5028 },
-            { name: "Sacramento Zoo", address: "Sacramento, California, USA", priceUSD: 23, priceEUR: 21.00, hours: "9:00 AM - 4:00 PM", url: "https://saczoo.org", petting: false, lat: 38.5414, lng: -121.4939 },
-            { name: "Happy Hollow Park & Zoo", address: "San Jose, California, USA", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 5:00 PM", url: "https://happyhollow.org", petting: false, lat: 37.3235, lng: -121.8596 },
-            { name: "Denver Zoo", address: "Denver, Colorado, USA", priceUSD: 24, priceEUR: 22.00, hours: "10:00 AM - 5:00 PM", url: "https://denverzoo.org", petting: false, lat: 39.7497, lng: -104.9499 },
-            { name: "Jacksonville Zoo", address: "Jacksonville, Florida, USA", priceUSD: 30, priceEUR: 27.50, hours: "9:00 AM - 5:00 PM", url: "https://jacksonvillezoo.org", petting: false, lat: 30.4042, lng: -81.6421 },
-            { name: "Brevard Zoo", address: "Melbourne, Florida, USA", priceUSD: 32, priceEUR: 29.00, hours: "9:30 AM - 5:00 PM", url: "https://brevardzoo.org", petting: false, lat: 28.2325, lng: -80.7314 },
-            { name: "Brookfield Zoo", address: "Brookfield, Illinois, USA", priceUSD: 30, priceEUR: 27.50, hours: "10:00 AM - 5:00 PM", url: "https://brookfieldzoo.org", petting: false, lat: 41.8322, lng: -87.8328 },
-            { name: "Sedgwick County Zoo", address: "Wichita, Kansas, USA", priceUSD: 22, priceEUR: 20.00, hours: "9:00 AM - 5:00 PM", url: "https://scz.org", petting: false, lat: 37.7125, lng: -97.4121 },
-            { name: "Franklin Park Zoo", address: "Boston, Massachusetts, USA", priceUSD: 25, priceEUR: 23.00, hours: "10:00 AM - 5:00 PM", url: "https://zoonewengland.org", petting: false, lat: 42.3047, lng: -71.0906 },
-            { name: "Southwick's Zoo", address: "Mendon, Massachusetts, USA", priceUSD: 38, priceEUR: 35.00, hours: "10:00 AM - 5:00 PM", url: "https://southwickszoo.com", petting: false, lat: 42.0621, lng: -71.5645 },
-            { name: "Buffalo Zoo", address: "Buffalo, New York, USA", priceUSD: 21, priceEUR: 19.00, hours: "10:00 AM - 4:00 PM", url: "https://buffalozoo.org", petting: false, lat: 42.9363, lng: -78.8546 },
-            { name: "Cleveland Metroparks Zoo", address: "Cleveland, Ohio, USA", priceUSD: 19, priceEUR: 17.50, hours: "10:00 AM - 5:00 PM", url: "https://clevelandmetroparks.com", petting: false, lat: 41.4449, lng: -81.7161 },
-            { name: "Pittsburgh Zoo", address: "Pittsburgh, Pennsylvania, USA", priceUSD: 24, priceEUR: 22.00, hours: "9:30 AM - 4:00 PM", url: "https://pittsburghzoo.org", petting: false, lat: 40.4852, lng: -79.9197 },
-            { name: "Houston Zoo", address: "Houston, Texas, USA", priceUSD: 27, priceEUR: 25.00, hours: "9:00 AM - 5:00 PM", url: "https://houstonzoo.org", petting: false, lat: 29.7153, lng: -95.3914 },
-            { name: "Dallas Zoo", address: "Dallas, Texas, USA", priceUSD: 21, priceEUR: 19.00, hours: "9:00 AM - 4:00 PM", url: "https://dallaszoo.com", petting: false, lat: 32.7441, lng: -96.8153 },
-            { name: "Toronto Zoo", address: "Toronto, Ontario, Canada", priceUSD: 28, priceEUR: 26.00, hours: "9:30 AM - 4:30 PM", url: "https://torontozoo.com", petting: false, lat: 43.8177, lng: -79.1858 },
-            { name: "Chester Zoo", address: "Chester, England, UK", priceUSD: 36, priceEUR: 33.00, hours: "10:00 AM - 5:00 PM", url: "https://chesterzoo.org", petting: false, lat: 53.2275, lng: -2.8844 },
-            { name: "Cotswold Wildlife Park", address: "Burford, Oxfordshire, England", priceUSD: 22, priceEUR: 20.00, hours: "10:00 AM - 6:00 PM", url: "https://cotswoldwildlifepark.co.uk", petting: false, lat: 51.7766, lng: -1.6329 },
-            { name: "Zoo Berlin", address: "Berlin, Germany", priceUSD: 22, priceEUR: 20.00, hours: "9:00 AM - 6:30 PM", url: "https://zoo-berlin.de", petting: false, lat: 52.5081, lng: 13.3376 },
-            { name: "Tiergarten Schonbrunn", address: "Vienna, Austria", priceUSD: 27, priceEUR: 25.00, hours: "9:00 AM - 5:30 PM", url: "https://zoovienna.at", petting: false, lat: 48.1824, lng: 16.3028 },
-            { name: "Zoo Barcelona", address: "Barcelona, Spain", priceUSD: 24, priceEUR: 22.00, hours: "10:00 AM - 5:30 PM", url: "https://zoobarcelona.cat", petting: false, lat: 41.3854, lng: 2.1887 },
-            { name: "Copenhagen Zoo", address: "Copenhagen, Denmark", priceUSD: 30, priceEUR: 27.50, hours: "10:00 AM - 4:00 PM", url: "https://zoo.dk", petting: false, lat: 55.6723, lng: 12.5205 },
-            { name: "Artis Amsterdam Royal Zoo", address: "Amsterdam, Netherlands", priceUSD: 28, priceEUR: 26.00, hours: "9:00 AM - 6:00 PM", url: "https://artis.nl", petting: false, lat: 52.3667, lng: 4.9125 },
-            { name: "Zurich Zoo", address: "Zurich, Switzerland", priceUSD: 29, priceEUR: 26.50, hours: "9:00 AM - 6:00 PM", url: "https://zoo.ch", petting: false, lat: 47.3854, lng: 8.5746 },
-            { name: "Nasu Animal Kingdom", address: "Nasu, Tochigi, Japan", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 4:30 PM", url: "https://nasu-oukoku.com", petting: false, lat: 37.0734, lng: 140.0526 },
-            { name: "Ocean Park", address: "Aberdeen, Hong Kong", priceUSD: 64, priceEUR: 59.00, hours: "10:00 AM - 7:00 PM", url: "https://oceanpark.com.hk", petting: false, lat: 22.2467, lng: 114.1757 },
-            { name: "Night Safari", address: "Singapore", priceUSD: 42, priceEUR: 38.50, hours: "7:15 PM - 12:00 AM", url: "https://mandai.com", petting: false, lat: 1.4024, lng: 103.7796 },
-            { name: "Taronga Zoo", address: "Sydney, Australia", priceUSD: 33, priceEUR: 30.50, hours: "9:30 AM - 4:30 PM", url: "https://taronga.org.au", petting: false, lat: -33.8435, lng: 151.2413 },
-
-            // Zoos Offering Direct Capybara Petting
-            { name: "Ghost Ranch Exotics", address: "Marana, Arizona, USA", priceUSD: 35, priceEUR: 32.00, hours: "Appt Only", url: "https://ghostranchexotics.com", petting: true, lat: 32.4364, lng: -111.2251 },
-            { name: "Funny Foot Farm / Tucson Petting Zoo", address: "Tucson, Arizona, USA", priceUSD: 12, priceEUR: 11.00, hours: "10:00 AM - 5:00 PM", url: "https://tucsonpettingzoo.com", petting: true, lat: 32.2226, lng: -110.9747 },
-            { name: "Gatorland", address: "Orlando, Florida, USA", priceUSD: 35, priceEUR: 32.00, hours: "10:00 AM - 5:00 PM", url: "https://gatorland.com", petting: true, lat: 28.3556, lng: -81.4034 },
-            { name: "The Capybara Cafe", address: "St. Augustine, Florida, USA", priceUSD: 20, priceEUR: 18.50, hours: "11:00 AM - 6:00 PM", url: "https://capybaracafefl.com", petting: true, lat: 29.8947, lng: -81.3145 },
-            { name: "Wild Florida", address: "Kenansville, Florida, USA", priceUSD: 45, priceEUR: 41.50, hours: "9:00 AM - 6:00 PM", url: "https://wildfloridairboats.com", petting: true, lat: 27.9547, lng: -81.1436 },
-            { name: "Amazing Animals Inc.", address: "St. Cloud, Florida, USA", priceUSD: 40, priceEUR: 37.00, hours: "Appt Only", url: "https://amazinganimalsinc.org", petting: true, lat: 28.2489, lng: -81.2812 },
-            { name: "North Georgia Wildlife Park", address: "Cleveland, Georgia, USA", priceUSD: 30, priceEUR: 27.50, hours: "10:00 AM - 4:00 PM", url: "https://myfavoritezoo.com", petting: true, lat: 34.5970, lng: -83.7632 },
-            { name: "Tanganyika Wildlife Park", address: "Goddard, Kansas, USA", priceUSD: 40, priceEUR: 37.00, hours: "9:00 AM - 5:00 PM", url: "https://twpark.com", petting: true, lat: 37.6661, lng: -97.5186 },
-            { name: "Lewis Farm Zoo", address: "New Era, Michigan, USA", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 6:00 PM", url: "https://lewisfarms.com", petting: true, lat: 43.5583, lng: -86.3478 },
-            { name: "Animal Adventure Park", address: "Harpursville, New York, USA", priceUSD: 20, priceEUR: 18.50, hours: "10:00 AM - 5:00 PM", url: "https://theanimaladventurepark.com", petting: true, lat: 42.1906, lng: -75.6046 },
-            { name: "Majestic Meadows Alpacas & Boutique", address: "Medina, Ohio, USA", priceUSD: 15, priceEUR: 14.00, hours: "10:00 AM - 5:00 PM", url: "https://majesticmeadowsalpacas.com", petting: true, lat: 41.1384, lng: -81.8651 },
-            { name: "Animal World & Snake Farm Zoo", address: "New Braunfels, Texas, USA", priceUSD: 22, priceEUR: 20.00, hours: "10:00 AM - 6:00 PM", url: "https://awsfzoo.com", petting: true, lat: 29.7027, lng: -98.1245 },
-            { name: "Hertfordshire Zoo", address: "Broxbourne, England, UK", priceUSD: 25, priceEUR: 23.00, hours: "10:00 AM - 5:00 PM", url: "https://hertfordshirezoo.com", petting: true, lat: 51.7456, lng: -0.0534 },
-            { name: "Chew Valley Animal Park", address: "Chew Magna, England, UK", priceUSD: 15, priceEUR: 14.00, hours: "10:00 AM - 4:00 PM", url: "https://chewvalleyanimalpark.co.uk", petting: true, lat: 51.3653, lng: -2.6084 },
-            { name: "Hoo Zoo and Dinosaur World", address: "Telford, England, UK", priceUSD: 18, priceEUR: 16.50, hours: "10:00 AM - 5:00 PM", url: "https://hoozoo.com", petting: true, lat: 52.7121, lng: -2.4844 },
-            { name: "Capyba Cafe", address: "Tokyo, Japan", priceUSD: 12, priceEUR: 11.00, hours: "11:00 AM - 7:00 PM", url: "https://capybacafe.jp", petting: true, lat: 35.6895, lng: 139.6917 },
-
-            // Major Zoos that ALSO offer Petting
-            { name: "San Diego Zoo", address: "San Diego, California, USA", priceUSD: 72, priceEUR: 66.00, hours: "9:00 AM - 5:00 PM", url: "https://sandiegozoo.org", petting: true, lat: 32.7353, lng: -117.1490 },
-            { name: "London Zoo", address: "London, England, UK", priceUSD: 40, priceEUR: 37.00, hours: "10:00 AM - 6:00 PM", url: "https://londonzoo.org", petting: true, lat: 51.5353, lng: -0.1534 },
-            { name: "Saaremaa Zoo", address: "Saaremaa, Estonia", priceUSD: 12, priceEUR: 11.00, hours: "10:00 AM - 6:00 PM", url: "https://saaremaazoo.ee", petting: true, lat: 58.2481, lng: 22.5039 },
-            { name: "Nagasaki Bio Park", address: "Saikai, Japan", priceUSD: 15, priceEUR: 14.00, hours: "10:00 AM - 5:00 PM", url: "http://biopark.co.jp", petting: true, lat: 32.9972, lng: 129.7758 },
-            { name: "Izu Shaboten Zoo", address: "Izu, Japan", priceUSD: 19, priceEUR: 17.50, hours: "9:00 AM - 5:00 PM", url: "https://izushaboten.com", petting: true, lat: 34.9080, lng: 139.1023 }
+        const db = [
+            {n:"San Francisco Zoo",a:"CA, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://sfzoo.org",pt:0,lt:37.7,lg:-122.5},
+            {n:"Sacramento Zoo",a:"CA, USA",pU:23,pE:21,h:"9AM-4PM",u:"https://saczoo.org",pt:0,lt:38.5,lg:-121.5},
+            {n:"Happy Hollow Zoo",a:"CA, USA",pU:18,pE:16.5,h:"10AM-5PM",u:"https://happyhollow.org",pt:0,lt:37.3,lg:-121.8},
+            {n:"Denver Zoo",a:"CO, USA",pU:24,pE:22,h:"10AM-5PM",u:"https://denverzoo.org",pt:0,lt:39.7,lg:-104.9},
+            {n:"Jacksonville Zoo",a:"FL, USA",pU:30,pE:27.5,h:"9AM-5PM",u:"https://jacksonvillezoo.org",pt:0,lt:30.4,lg:-81.6},
+            {n:"Brevard Zoo",a:"FL, USA",pU:32,pE:29,h:"9:30AM-5PM",u:"https://brevardzoo.org",pt:0,lt:28.2,lg:-80.7},
+            {n:"Brookfield Zoo",a:"IL, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://brookfieldzoo.org",pt:0,lt:41.8,lg:-87.8},
+            {n:"Sedgwick County Zoo",a:"KS, USA",pU:22,pE:20,h:"9AM-5PM",u:"https://scz.org",pt:0,lt:37.7,lg:-97.4},
+            {n:"Franklin Park Zoo",a:"MA, USA",pU:25,pE:23,h:"10AM-5PM",u:"https://zoonewengland.org",pt:0,lt:42.3,lg:-71.1},
+            {n:"Southwick's Zoo",a:"MA, USA",pU:38,pE:35,h:"10AM-5PM",u:"https://southwickszoo.com",pt:0,lt:42.1,lg:-71.6},
+            {n:"Buffalo Zoo",a:"NY, USA",pU:21,pE:19,h:"10AM-4PM",u:"https://buffalozoo.org",pt:0,lt:42.9,lg:-78.8},
+            {n:"Cleveland Zoo",a:"OH, USA",pU:19,pE:17.5,h:"10AM-5PM",u:"https://clevelandmetroparks.com",pt:0,lt:41.4,lg:-81.7},
+            {n:"Pittsburgh Zoo",a:"PA, USA",pU:24,pE:22,h:"9:30AM-4PM",u:"https://pittsburghzoo.org",pt:0,lt:40.5,lg:-79.9},
+            {n:"Houston Zoo",a:"TX, USA",pU:27,pE:25,h:"9AM-5PM",u:"https://houstonzoo.org",pt:0,lt:29.7,lg:-95.4},
+            {n:"Dallas Zoo",a:"TX, USA",pU:21,pE:19,h:"9AM-4PM",u:"https://dallaszoo.com",pt:0,lt:32.7,lg:-96.8},
+            {n:"Toronto Zoo",a:"ON, Canada",pU:28,pE:26,h:"9:30AM-4:30PM",u:"https://torontozoo.com",pt:0,lt:43.8,lg:-79.2},
+            {n:"Chester Zoo",a:"England, UK",pU:36,pE:33,h:"10AM-5PM",u:"https://chesterzoo.org",pt:0,lt:53.2,lg:-2.9},
+            {n:"Cotswold Wildlife Park",a:"England",pU:22,pE:20,h:"10AM-6PM",u:"https://cotswoldwildlifepark.co.uk",pt:0,lt:51.8,lg:-1.6},
+            {n:"Zoo Berlin",a:"Germany",pU:22,pE:20,h:"9AM-6:30PM",u:"https://zoo-berlin.de",pt:0,lt:52.5,lg:13.3},
+            {n:"Tiergarten Schonbrunn",a:"Vienna, Austria",pU:27,pE:25,h:"9AM-5:30PM",u:"https://zoovienna.at",pt:0,lt:48.2,lg:16.3},
+            {n:"Zoo Barcelona",a:"Spain",pU:24,pE:22,h:"10AM-5:30PM",u:"https://zoobarcelona.cat",pt:0,lt:41.4,lg:2.2},
+            {n:"Copenhagen Zoo",a:"Denmark",pU:30,pE:27.5,h:"10AM-4PM",u:"https://zoo.dk",pt:0,lt:55.7,lg:12.5},
+            {n:"Artis Royal Zoo",a:"Netherlands",pU:28,pE:26,h:"9AM-6PM",u:"https://artis.nl",pt:0,lt:52.4,lg:4.9},
+            {n:"Zurich Zoo",a:"Switzerland",pU:29,pE:26.5,h:"9AM-6PM",u:"https://zoo.ch",pt:0,lt:47.4,lg:8.6},
+            {n:"Nasu Animal Kingdom",a:"Nasu, Japan",pU:18,pE:16.5,h:"10AM-4:30PM",u:"https://nasu-oukoku.com",pt:0,lt:37.1,lg:140.1},
+            {n:"Ocean Park",a:"Hong Kong",pU:64,pE:59,h:"10AM-7PM",u:"https://oceanpark.com.hk",pt:0,lt:22.2,lg:114.2},
+            {n:"Night Safari",a:"Singapore",pU:42,pE:38.5,h:"7:15PM-12AM",u:"https://mandai.com",pt:0,lt:1.4,lg:103.8},
+            {n:"Taronga Zoo",a:"Sydney, Australia",pU:33,pE:30.5,h:"9:30AM-4:30PM",u:"https://taronga.org.au",pt:0,lt:-33.8,lg:151.2},
+            {n:"Ghost Ranch Exotics",a:"AZ, USA",pU:35,pE:32,h:"Appt Only",u:"https://ghostranchexotics.com",pt:1,lt:32.4,lg:-111.2},
+            {n:"Funny Foot Farm",a:"AZ, USA",pU:12,pE:11,h:"10AM-5PM",u:"https://tucsonpettingzoo.com",pt:1,lt:32.2,lg:-111.0},
+            {n:"Gatorland",a:"FL, USA",pU:35,pE:32,h:"10AM-5PM",u:"https://gatorland.com",pt:1,lt:28.4,lg:-81.4},
+            {n:"The Capybara Cafe",a:"FL, USA",pU:20,pE:18.5,h:"11AM-6PM",u:"https://capybaracafefl.com",pt:1,lt:29.9,lg:-81.3},
+            {n:"Wild Florida",a:"FL, USA",pU:45,pE:41.5,h:"9AM-6PM",u:"https://wildfloridairboats.com",pt:1,lt:28.0,lg:-81.1},
+            {n:"Amazing Animals",a:"FL, USA",pU:40,pE:37,h:"Appt Only",u:"https://amazinganimalsinc.org",pt:1,lt:28.2,lg:-81.3},
+            {n:"N. Georgia Wildlife",a:"GA, USA",pU:30,pE:27.5,h:"10AM-4PM",u:"https://myfavoritezoo.com",pt:1,lt:34.6,lg:-83.8},
+            {n:"Tanganyika Park",a:"KS, USA",pU:40,pE:37,h:"9AM-5PM",u:"https://twpark.com",pt:1,lt:37.7,lg:-97.5},
+            {n:"Lewis Farm Zoo",a:"MI, USA",pU:18,pE:16.5,h:"10AM-6PM",u:"https://lewisfarms.com",pt:1,lt:43.6,lg:-86.3},
+            {n:"Animal Adventure",a:"NY, USA",pU:20,pE:18.5,h:"10AM-5PM",u:"https://theanimaladventurepark.com",pt:1,lt:42.2,lg:-75.6},
+            {n:"Majestic Meadows",a:"OH, USA",pU:15,pE:14,h:"10AM-5PM",u:"https://majesticmeadowsalpacas.com",pt:1,lt:41.1,lg:-81.9},
+            {n:"Snake Farm Zoo",a:"TX, USA",pU:22,pE:20,h:"10AM-6PM",u:"https://awsfzoo.com",pt:1,lt:29.7,lg:-98.1},
+            {n:"Hertfordshire Zoo",a:"England, UK",pU:25,pE:23,h:"10AM-5PM",u:"https://hertfordshirezoo.com",pt:1,lt:51.7,lg:-0.1},
+            {n:"Chew Valley Park",a:"England, UK",pU:15,pE:14,h:"10AM-4PM",u:"https://chewvalleyanimalpark.co.uk",pt:1,lt:51.4,lg:-2.6},
+            {n:"Hoo Zoo",a:"England, UK",pU:18,pE:16.5,h:"10AM-5PM",u:"https://hoozoo.com",pt:1,lt:52.7,lg:-2.5},
+            {n:"Capyba Cafe",a:"Tokyo, Japan",pU:12,pE:11,h:"11AM-7PM",u:"https://capybacafe.jp",pt:1,lt:35.7,lg:139.7},
+            {n:"San Diego Zoo",a:"CA, USA",pU:72,pE:66,h:"9AM-5PM",u:"https://sandiegozoo.org",pt:1,lt:32.7,lg:-117.1},
+            {n:"London Zoo",a:"London, UK",pU:40,pE:37,h:"10AM-6PM",u:"https://londonzoo.org",pt:1,lt:51.5,lg:-0.2},
+            {n:"Saaremaa Zoo",a:"Estonia",pU:12,pE:11,h:"10AM-6PM",u:"https://saaremaazoo.ee",pt:1,lt:58.2,lg:22.5},
+            {n:"Nagasaki Bio Park",a:"Japan",pU:15,pE:14,h:"10AM-5PM",u:"http://biopark.co.jp",pt:1,lt:33.0,lg:129.8},
+            {n:"Izu Shaboten Zoo",a:"Japan",pU:19,pE:17.5,h:"9AM-5PM",u:"https://izushaboten.com",pt:1,lt:34.9,lg:139.1}
         ];
-
-        let activeZoos = [...zooDatabase];
-        const userLocation = { lat: 59.4370, lng: 24.7536 };
-
-        function renderZoos() {
-            const grid = document.getElementById('zoo-grid');
-            grid.innerHTML = '';
-            
-            activeZoos.forEach((zoo) => {
-                const card = document.createElement('div');
-                card.className = 'zoo-card';
-                card.onclick = () => openModal(zoo);
-                
-                card.innerHTML = `
-                    <div class="zoo-info">
-                        <div class="zoo-name">\${zoo.name}</div>
-                        <div class="zoo-location">\${zoo.address}</div>
-                        
-                        <div
+        let current = [...db];
+        const uLoc = {lt:59.437,lg:24.754}; // Tallinn base
+        function ren(){
+            const g = document.getElementById('grid');g.innerHTML='';
+            current.forEach((z)=>{
+                const d=document.createElement('div');d.className='zoo-card';d.onclick=()=>oM(z);
+                d.innerHTML=`<div class="zoo-info"><div class="zoo-name">${z.n}</div><div class="zoo-location">${z.a}</div><div class="zoo-teaser-metrics"><span>💵 $${z.pU} / €${z.pE}</span><span>🤝 Pet: ${z.pt?'Yes':'No'}</span></div></div>`;
+                g.appendChild(d);
+            });
+            document.getElementById('count').innerText=current.length;
+        }
+        function oM(z){
+            document.getElementById('mH').innerText=z.n;document.getElementById('mA').innerText=z.a;
+            document.getElementById('mUsd').innerText=`$${z.pU}`;document.getElementById('mEur').innerText=`€${z.pE}`;
+            document.getElementById('mHrs').innerText=z.h;document.getElementById('mP').innerText=z.pt?'Yes':'No';
+            const l=document.getElementById('mL');l.href=z.u;document.getElementById('mT').innerHTML=log(z);
+            document.getElementById('ov').style.display='flex';
+        }
+        function cM(){document.getElementById('ov').style.display='none'}
+        function log(z){
+            const d=6371*2*Math.atan2(Math.sqrt(Math.sin((z.lt-uLoc.lt)*Math.PI/360)**2+Math.cos(uLoc.lt*Math.PI/180)*Math.cos(z.lt*Math.PI/180)*Math.sin((z.lg-uLoc.lg)*Math.PI/360)**2),Math.sqrt(1-(Math.sin((z.lt-uLoc.lt)*Math.PI/360)**2+Math.cos(uLoc.lt*Math.PI/180)*Math.cos(z.lt*Math.PI/180)*Math.sin((z.lg-uLoc.lg)*Math.PI/360)**2)));
+            if(d<300)return `🚗 Car/Ferry: €20-€35 | ~4 hrs<br>🚌 Intercity: €12-€18 | ~4.5 hrs`;
+            if(d<3000)return `✈️ Flight: €40-€150 | ~2-3 hrs<br>🚌 Intercity: €35-€80 | ~22-44 hrs`;
+            return `✈️ Long Flight: €400-€900 | ~12-24 hrs<br>🛳️ Sea: Not viable for fast travel`;
+        }
+        function process(){
+            let f=[...db];
+            const p=document.getElementById('price').value;if(p)f=f.filter(z=>z.pU<=parseFloat(p));
+            const t=document.getElementById('petting').value;if(t!=='all')f=f.filter(z=>z.pt===(t==='yes'));
+            if(document.getElementById('sort').value==='cheap')f.sort((a,b)=>a.pU-b.pU);
+            current=f;ren();
+        }
+        window.onload=ren;window.addEventListener('keydown',(e)=>{if(e.key==='Escape')cM()});
     </script>
 </body>
 </html>
