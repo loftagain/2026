@@ -7,7 +7,7 @@
     
     <!-- DROP BLOCK 2 (CSS STYLING) DIRECTLY BELOW THIS LINE -->
     <style>
-              :root {
+        :root {
             --primary: #5c8374;
             --secondary: #1b4242;
             --light: #f5f7f8;
@@ -88,10 +88,10 @@
             flex: 1 1 100%;
             text-align: center;
         }
-
+        /* 4-column responsive grid mapping */
         .zoo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.25rem;
             margin-top: 1.5rem;
         }
@@ -240,9 +240,17 @@
             line-height: 1.6;
         }
 
+        /* Screen dimension breakpoints */
+        @media (max-width: 1024px) {
+            .zoo-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .zoo-grid { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 480px) {
             .container { padding: 0 0.75rem; }
             .controls { padding: 1rem; gap: 1rem; }
+            .zoo-grid { grid-template-columns: 1fr; }
             .modal-overlay { padding: 0; }
             .modal-content {
                 border-radius: 0;
@@ -387,24 +395,10 @@
                 
                 card.innerHTML = `
                     <div class="zoo-info">
-                        <div class="zoo-name">${zoo.name}</div>
-                        <div class="zoo-location">${zoo.address}</div>
+                        <div class="zoo-name">\${zoo.name}</div>
+                        <div class="zoo-location">\${zoo.address}</div>
                         
-                        <div class="zoo-teaser-metrics">
-                            <span>💵 $${zoo.priceUSD} / €${zoo.priceEUR}</span>
-                            <span>🤝 Petting: ${zoo.petting ? 'Yes' : 'No'}</span>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-            document.getElementById('zoo-count').innerText = activeZoos.length;
-        }
-
-        function openModal(zoo) {
-            document.getElementById('modal-title').innerText = zoo.name;
-            document.getElementById('modal
-
+                        <div
     </script>
 </body>
 </html>
