@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capybara Tracker</title>
     <style>
-        :root{--primary:#5c8374;--secondary:#1b4242;--light:#f5f7f8;--dark:#092626}
+        :root{--primary:#e67e22;--secondary:#d35400;--light:#f5f7f8;--dark:#092626;--card-bg:#eaeaea}
         *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
         body{background:var(--light);color:var(--dark);height:100%}
-        header{background:linear-gradient(rgba(9,38,38,0.8),rgba(9,38,38,0.8)),url('https://unsplash.com') center/cover;color:#fff;text-align:center;padding:2rem 1rem}
+        header{background:linear-gradient(rgba(211,84,0,0.8),rgba(211,84,0,0.8)),url('https://unsplash.com') center/cover;color:#fff;text-align:center;padding:2rem 1rem}
+        header h1{font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:0.5rem}
         .container{max-width:1200px;margin:1.5rem auto;padding:0 1rem}
         .controls{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
-        .control-group{flex:1 1 200px;display:flex;flex-direction:column;gap:0.25rem}
+        .control-group{flex:1 1:200px;display:flex;flex-direction:column;gap:0.25rem}
         label{font-size:0.75rem;font-weight:700;color:var(--secondary);text-transform:uppercase}
         select{padding:0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;background-color:#fff}
-        .results-count{font-size:0.85rem;color:#666;flex:1 1 100%;text-align:center}
+        .results-count{font-size:0.85rem;color:#666;flex:1 1:100%;text-align:center}
         .zoo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
-        .zoo-card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;flex-direction:column;cursor:pointer;transition:0.2s;border:1px solid #eee;position:relative}
-        .zoo-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
+        .zoo-card{background:var(--card-bg);border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;flex-direction:column;cursor:pointer;transition:0.2s;border:1px solid #ddd;position:relative}
+        .zoo-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.1);border-color:var(--primary)}
         .zoo-info{padding:1rem;display:flex;flex-direction:column;flex-grow:1}
         .zoo-name{font-size:1.05rem;color:var(--secondary);margin-bottom:0.25rem;font-weight:700}
-        .zoo-location{font-size:0.8rem;color:#666;margin-bottom:0.75rem}
-        .zoo-teaser-metrics{display:flex;justify-content:space-between;font-size:0.8rem;color:#555;padding-top:0.5rem;border-top:1px solid #eee;margin-top:auto}
+        .zoo-location{font-size:0.8rem;color:#555;margin-bottom:0.75rem}
+        .zoo-teaser-metrics{display:flex;justify-content:space-between;font-size:0.8rem;color:#444;padding-top:0.5rem;border-top:1px solid #ccc;margin-top:auto}
         .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;justify-content:center;align-items:center;padding:1rem}
         .modal-content{background:#fff;width:100%;max-width:450px;padding:1.5rem;border-radius:12px;position:relative;animation:mIn 0.3s ease;max-height:90vh;overflow-y:auto}
         @keyframes mIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
@@ -40,7 +41,6 @@
 <body>
     <header>
         <h1>Global Capybara Tracker</h1>
-        <p>Browse global locations, logistics, and petting setups.</p>
     </header>
     <div class="container">
         <div class="controls">
@@ -78,7 +78,6 @@
     </div>
     <script>
         const db = [
-            // Standard Zoos with Capybaras
             {n:"San Francisco Zoo",a:"CA, USA",pU:30,pE:27.5,h:"10AM-5PM",u:"https://sfzoo.org",pt:0,lt:37.7,lg:-122.5,reg:"na"},
             {n:"Sacramento Zoo",a:"CA, USA",pU:23,pE:21,h:"9AM-4PM",u:"https://saczoo.org",pt:0,lt:38.5,lg:-121.5,reg:"na"},
             {n:"Happy Hollow Zoo",a:"CA, USA",pU:18,pE:16.5,h:"10AM-5PM",u:"https://happyhollow.org",pt:0,lt:37.3,lg:-121.8,reg:"na"},
@@ -140,7 +139,6 @@
             const g = document.getElementById('grid');g.innerHTML='';
             current.forEach((z)=>{
                 const d=document.createElement('div');d.className='zoo-card';d.onclick=()=>oM(z);
-                
                 d.innerHTML=`<div class="zoo-info"><div class="zoo-name">${z.n}</div><div class="zoo-location">${z.a}</div><div class="zoo-teaser-metrics"><span>💵 $${z.pU} / €${z.pE}</span><span>🤝 Pet: ${z.pt?'Yes':'No'}</span></div></div>`;
                 g.appendChild(d);
             });
