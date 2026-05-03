@@ -67,7 +67,7 @@
             min-width: 180px;
         }
 
-        /* Zoo Cards Grid: Explicitly forced to 4 columns on desktop */
+        /* Zoo Cards Grid: Absolute 4-column split */
         .zoo-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -75,7 +75,6 @@
             margin-top: 1.5rem;
         }
         
-        /* Box styling */
         .zoo-card {
             background: white;
             border-radius: 8px;
@@ -131,25 +130,38 @@
             line-height: 1.4;
         }
         .zoo-details strong { color: var(--secondary); }
-
-        /* Responsive Breakpoints: Scales down smoothly on smaller devices */
-        @media (max-width: 1024px) {
-            .zoo-grid { grid-template-columns: repeat(3, 1fr); }
+        
+        .capy-photo {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            border: 1px solid #ddd;
         }
+
+        .transport-box {
+            background: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive scaling */
+        @media (max-width: 1024px) { .zoo-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 768px) {
             .zoo-grid { grid-template-columns: repeat(2, 1fr); }
             .controls { flex-direction: column; align-items: stretch; }
         }
-        @media (max-width: 480px) {
-            .zoo-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 480px) { .zoo-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Global Capybara Tracker</h1>
-        <p>A compiled list of global wildlife establishments that host Capybaras.</p>
+        <p>Analyze transit corridors and admission grids without map rendering.</p>
     </header>
 
     <div class="container">
@@ -177,17 +189,19 @@
 
     <script>
         const zooDatabase = [
-            { name: "San Diego Zoo", address: "2920 Zoo Dr, San Diego, CA, USA", price: 72, hours: "9:00 AM - 5:00 PM" },
-            { name: "London Zoo", address: "Regent's Park, London, UK", price: 40, hours: "10:00 AM - 6:00 PM" },
-            { name: "Nagasaki Bio Park", address: "2291-1 Seihicho, Saikai, Japan", price: 15, hours: "10:00 AM - 5:00 PM" },
-            { name: "Zoo Berlin", address: "Hardenbergpl. 8, Berlin, Germany", price: 22, hours: "9:00 AM - 6:30 PM" },
-            { name: "Sydney Zoo", address: "700 Great Western Hwy, Sydney, Australia", price: 35, hours: "9:00 AM - 5:00 PM" },
-            { name: "Toronto Zoo", address: "2000 Meadowvale Rd, Toronto, Canada", price: 28, hours: "9:30 AM - 4:30 PM" },
-            { name: "Faunia", address: "Av. Comunidades, Madrid, Spain", price: 25, hours: "11:00 AM - 7:00 PM" },
-            { name: "Vienna Zoo", address: "Maxingstraße 13b, Wien, Austria", price: 27, hours: "9:00 AM - 5:30 PM" }
+            { name: "Tallinn Zoo", address: "Paldiski mnt 145, Tallinn, Estonia", priceUSD: 18, priceEUR: 16.50, hours: "9:00 AM - 7:00 PM", img: "https://unsplash.com", lat: 59.4223, lng: 24.6644 },
+            { name: "London Zoo", address: "Regent's Park, London, UK", priceUSD: 40, priceEUR: 37, hours: "10:00 AM - 6:00 PM", img: "https://unsplash.com", lat: 51.5353, lng: -0.1534 },
+            { name: "Nagasaki Bio Park", address: "2291-1 Seihicho, Saikai, Japan", priceUSD: 15, priceEUR: 14, hours: "10:00 AM - 5:00 PM", img: "https://unsplash.com", lat: 32.9972, lng: 129.7758 },
+            { name: "Zoo Berlin", address: "Hardenbergpl. 8, Berlin, Germany", priceUSD: 22, priceEUR: 20, hours: "9:00 AM - 6:30 PM", img: "https://unsplash.com", lat: 52.5081, lng: 13.3376 },
+            { name: "Sydney Zoo", address: "700 Great Western Hwy, Sydney, Australia", priceUSD: 35, priceEUR: 32, hours: "9:00 AM - 5:00 PM", img: "https://unsplash.com", lat: -33.8055, lng: 150.8520 },
+            { name: "Toronto Zoo", address: "2000 Meadowvale Rd, Toronto, Canada", priceUSD: 28, priceEUR: 26, hours: "9:30 AM - 4:30 PM", img: "https://unsplash.com", lat: 43.8177, lng: -79.1858 },
+            { name: "Faunia", address: "Av. Comunidades, Madrid, Spain", priceUSD: 25, priceEUR: 23, hours: "11:00 AM - 7:00 PM", img: "https://unsplash.com", lat: 40.3934, lng: -3.6146 },
+            { name: "Vienna Zoo", address: "Maxingstraße 13b, Wien, Austria", priceUSD: 27, priceEUR: 25, hours: "9:00 AM - 5:30 PM", img: "https://unsplash.com", lat: 48.1824, lng: 16.3028 }
         ];
 
         let activeZoos = [...zooDatabase];
+        // Hardcoded simulation coordinate of user in Kesklinn, Tallinn
+        const userLocation = { lat: 59.4370, lng: 24.7536 };
 
         function renderZoos() {
             const grid = document.getElementById('zoo-grid');
@@ -198,20 +212,29 @@
                 card.className = 'zoo-card';
                 card.onclick = () => toggleDetails(index);
                 
+                const logistics = calculateLogistics(zoo);
+
                 card.innerHTML = `
                     <div class="zoo-info">
                         <div class="zoo-name">${zoo.name}</div>
                         <div class="zoo-location">${zoo.address}</div>
                         
                         <div class="zoo-teaser-metrics">
-                            <span>💵 $${zoo.price}</span>
+                            <span>💵 $${zoo.priceUSD} / €${zoo.priceEUR}</span>
                             <span>⏰ Open</span>
                         </div>
 
                         <div class="zoo-details" id="details-${index}">
-                            <strong>🎫 Ticket Price:</strong> $${zoo.price} USD<br>
-                            <strong>🕒 Regular Hours:</strong> ${zoo.hours}<br>
-                            <strong>🌿 Species:</strong> Hydrochoerus hydrochaeris
+                            <strong>🎫 USD Price:</strong> $${zoo.priceUSD} USD<br>
+                            <strong>🎫 EUR Price:</strong> €${zoo.priceEUR} EUR<br>
+                            <strong>🕒 Hours:</strong> ${zoo.hours}<br>
+                            
+                            <img src="${zoo.img}" alt="Capybara at ${zoo.name}" class="capy-photo">
+                            
+                            <strong>🚪 Available Transportation:</strong>
+                            <div class="transport-box">
+                                ${logistics}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -220,7 +243,42 @@
             document.getElementById('zoo-count').innerText = activeZoos.length;
         }
 
-        // Toggles expansion of cards to view hours and tickets
+        // Simulates physical distance logic to formulate accurate cost and mode arrays
+        function calculateLogistics(zoo) {
+            const R = 6371; 
+            const dLat = (zoo.lat - userLocation.lat) * Math.PI / 180;
+            const dLon = (zoo.lng - userLocation.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(zoo.lat * Math.PI / 180) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c; 
+
+            // Scenario 1: Extremely close (Inside Tallinn)
+            if (distance < 50) {
+                return `
+                    🚌 <strong>City Bus:</strong> €2.00 | ~25 mins<br>
+                    🚕 <strong>Local Taxi:</strong> €7.00 - €12.00 | ~12 mins<br>
+                    🚲 <strong>Bicycle:</strong> Free | ~30 mins
+                `;
+            } 
+            // Scenario 2: Intermediate continent (Europe)
+            else if (distance < 3000) {
+                return `
+                    ✈️ <strong>Flight Strategy:</strong> €40.00 - €150.00 | ~2-3 hrs<br>
+                    🚌 <strong>Intercity Coach:</strong> €35.00 - €80.00 | ~22-44 hrs<br>
+                    🚗 <strong>Personal Car (Fuel):</strong> €150.00+ | ~18-25 hrs
+                `;
+            } 
+            // Scenario 3: Transoceanic
+            else {
+                return `
+                    ✈️ <strong>Long-Haul Flight:</strong> €400.00 - €900.00 | ~12-24 hrs<br>
+                    🛳️ <strong>Ferry & Ocean Cruise:</strong> Not viable for fast travel
+                `;
+            }
+        }
+
         function toggleDetails(index) {
             const detailPanel = document.getElementById(`details-${index}`);
             const isVisible = detailPanel.style.display === 'block';
@@ -233,19 +291,18 @@
 
             const priceLimit = document.getElementById('price-filter').value;
             if (priceLimit) {
-                filtered = filtered.filter(zoo => zoo.price <= parseFloat(priceLimit));
+                filtered = filtered.filter(zoo => zoo.priceUSD <= parseFloat(priceLimit));
             }
 
             const sortType = document.getElementById('sort-select').value;
             if (sortType === 'cheapest') {
-                filtered.sort((a, b) => a.price - b.price);
+                filtered.sort((a, b) => a.priceUSD - b.priceUSD);
             }
 
             activeZoos = filtered;
             renderZoos();
         }
 
-        // Run execution on page ready
         window.onload = renderZoos;
     </script>
 </body>
